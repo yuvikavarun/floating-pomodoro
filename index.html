@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pomodoro Timer</title>
+    <title>Focus Timer</title>
     <style>
         * {
             margin: 0;
@@ -168,102 +168,6 @@
             transform: translateY(-3px);
         }
 
-        /* Floating window styles */
-        .floating-timer {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 300px;
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            padding: 1.5rem;
-            z-index: 10000;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .floating-timer .timer-display {
-            font-size: 2.5rem;
-            color: #333;
-            margin: 1rem 0;
-        }
-
-        .floating-timer .timer-status {
-            color: #666;
-            font-size: 1rem;
-        }
-
-        .floating-timer .btn {
-            padding: 8px 16px;
-            font-size: 0.9rem;
-        }
-
-        .floating-timer .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .floating-timer .btn-secondary {
-            background: rgba(0, 0, 0, 0.1);
-            color: #333;
-        }
-
-        .floating-timer .mode-btn {
-            background: rgba(0, 0, 0, 0.05);
-            color: #333;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .floating-timer .mode-btn.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .floating-timer .progress-container {
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        .floating-timer .progress-bar {
-            background: #667eea;
-        }
-
-        .floating-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .floating-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #666;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-btn:hover {
-            background: rgba(0, 0, 0, 0.1);
-        }
-
-        .hidden {
-            display: none;
-        }
-
         /* Animation for timer completion */
         @keyframes pulse {
             0% { transform: scale(1); }
@@ -299,8 +203,8 @@
 </head>
 <body>
     <div class="container" id="main-timer">
-        <h1>Pomodoro Timer</h1>
-        <p class="subtitle">Focus on your tasks, one session at a time</p>
+        <h1>Focus Timer</h1>
+        <p class="subtitle">Stay focused and productive</p>
         
         <div class="timer-display" id="timer-display">25:00</div>
         <div class="timer-status" id="timer-status">Focus Time</div>
@@ -331,38 +235,9 @@
             <button class="pop-out-btn" id="pop-out-btn">
                 <i class="fas fa-external-link-alt"></i> Pop Out Timer
             </button>
-        </div>
-    </div>
-
-    <div class="floating-timer hidden" id="floating-timer">
-        <div class="floating-header">
-            <div class="floating-title">Pomodoro Timer</div>
-            <button class="close-btn" id="close-floating">×</button>
-        </div>
-        
-        <div class="timer-display" id="floating-timer-display">25:00</div>
-        <div class="timer-status" id="floating-timer-status">Focus Time</div>
-        
-        <div class="progress-container">
-            <div class="progress-bar" id="floating-progress-bar"></div>
-        </div>
-        
-        <div class="timer-controls">
-            <button class="btn btn-primary" id="floating-start-btn">
-                <i class="fas fa-play"></i> Start
-            </button>
-            <button class="btn btn-secondary" id="floating-pause-btn">
-                <i class="fas fa-pause"></i> Pause
-            </button>
-            <button class="btn btn-secondary" id="floating-reset-btn">
-                <i class="fas fa-redo"></i> Reset
-            </button>
-        </div>
-        
-        <div class="timer-modes">
-            <button class="mode-btn active" data-mode="pomodoro">Pomodoro</button>
-            <button class="mode-btn" data-mode="shortBreak">Short Break</button>
-            <button class="mode-btn" data-mode="longBreak">Long Break</button>
+            <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">
+                Opens in a small floating window that stays on top
+            </p>
         </div>
     </div>
 
@@ -372,25 +247,16 @@
         let timerTime = 25 * 60; // 25 minutes in seconds
         let isRunning = false;
         let currentMode = 'pomodoro';
-        let isFloating = false;
+        let floatingWindow = null;
 
         // DOM elements
-        const mainTimer = document.getElementById('main-timer');
-        const floatingTimer = document.getElementById('floating-timer');
         const timerDisplay = document.getElementById('timer-display');
-        const floatingTimerDisplay = document.getElementById('floating-timer-display');
         const timerStatus = document.getElementById('timer-status');
-        const floatingTimerStatus = document.getElementById('floating-timer-status');
         const startBtn = document.getElementById('start-btn');
-        const floatingStartBtn = document.getElementById('floating-start-btn');
         const pauseBtn = document.getElementById('pause-btn');
-        const floatingPauseBtn = document.getElementById('floating-pause-btn');
         const resetBtn = document.getElementById('reset-btn');
-        const floatingResetBtn = document.getElementById('floating-reset-btn');
         const progressBar = document.getElementById('progress-bar');
-        const floatingProgressBar = document.getElementById('floating-progress-bar');
         const popOutBtn = document.getElementById('pop-out-btn');
-        const closeFloatingBtn = document.getElementById('close-floating');
         const modeButtons = document.querySelectorAll('.mode-btn');
 
         // Timer functions
@@ -403,17 +269,27 @@
         function updateTimerDisplay() {
             const displayTime = formatTime(timerTime);
             timerDisplay.textContent = displayTime;
-            floatingTimerDisplay.textContent = displayTime;
+            
+            // Update floating window if it exists
+            if (floatingWindow && !floatingWindow.closed) {
+                try {
+                    floatingWindow.document.getElementById('floating-timer-display').textContent = displayTime;
+                    floatingWindow.document.getElementById('floating-progress-bar').style.width = `${100 - (timerTime / getTotalTime()) * 100}%`;
+                } catch (e) {
+                    // Floating window might be closed
+                    floatingWindow = null;
+                }
+            }
             
             // Update progress bar
-            let totalTime;
-            if (currentMode === 'pomodoro') totalTime = 25 * 60;
-            else if (currentMode === 'shortBreak') totalTime = 5 * 60;
-            else totalTime = 15 * 60;
-            
-            const progress = 100 - (timerTime / totalTime) * 100;
+            const progress = 100 - (timerTime / getTotalTime()) * 100;
             progressBar.style.width = `${progress}%`;
-            floatingProgressBar.style.width = `${progress}%`;
+        }
+
+        function getTotalTime() {
+            if (currentMode === 'pomodoro') return 25 * 60;
+            if (currentMode === 'shortBreak') return 5 * 60;
+            return 15 * 60;
         }
 
         function startTimer() {
@@ -433,7 +309,6 @@
                     
                     // Add completion animation
                     timerDisplay.classList.add('timer-complete');
-                    floatingTimerDisplay.classList.add('timer-complete');
                     
                     // Show notification
                     if (currentMode === 'pomodoro') {
@@ -451,7 +326,6 @@
                     // Remove animation after a delay
                     setTimeout(() => {
                         timerDisplay.classList.remove('timer-complete');
-                        floatingTimerDisplay.classList.remove('timer-complete');
                     }, 3000);
                 }
             }, 1000);
@@ -465,11 +339,7 @@
         function resetTimer() {
             clearInterval(timerInterval);
             isRunning = false;
-            
-            if (currentMode === 'pomodoro') timerTime = 25 * 60;
-            else if (currentMode === 'shortBreak') timerTime = 5 * 60;
-            else timerTime = 15 * 60;
-            
+            timerTime = getTotalTime();
             updateTimerDisplay();
         }
 
@@ -496,7 +366,16 @@
             }
             
             timerStatus.textContent = statusText;
-            floatingTimerStatus.textContent = statusText;
+            
+            // Update floating window if it exists
+            if (floatingWindow && !floatingWindow.closed) {
+                try {
+                    floatingWindow.document.getElementById('floating-timer-status').textContent = statusText;
+                } catch (e) {
+                    // Floating window might be closed
+                    floatingWindow = null;
+                }
+            }
             
             resetTimer();
         }
@@ -524,69 +403,183 @@
             }
         }
 
-        function popOutTimer() {
-            mainTimer.classList.add('hidden');
-            floatingTimer.classList.remove('hidden');
-            isFloating = true;
-            
-            // Make the floating timer draggable
-            makeDraggable(floatingTimer);
-        }
-
-        function closeFloatingTimer() {
-            floatingTimer.classList.add('hidden');
-            mainTimer.classList.remove('hidden');
-            isFloating = false;
-        }
-
-        function makeDraggable(element) {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            
-            element.onmousedown = dragMouseDown;
-            
-            function dragMouseDown(e) {
-                e = e || window.event;
-                e.preventDefault();
-                // Get the mouse cursor position at startup
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                document.onmouseup = closeDragElement;
-                // Call a function whenever the cursor moves
-                document.onmousemove = elementDrag;
+        function createFloatingWindow() {
+            // Close existing floating window if any
+            if (floatingWindow && !floatingWindow.closed) {
+                floatingWindow.close();
             }
             
-            function elementDrag(e) {
-                e = e || window.event;
-                e.preventDefault();
-                // Calculate the new cursor position
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                // Set the element's new position
-                element.style.top = (element.offsetTop - pos2) + "px";
-                element.style.left = (element.offsetLeft - pos1) + "px";
+            // Calculate position for the floating window (top-right corner)
+            const width = 300;
+            const height = 200;
+            const left = screen.width - width - 20;
+            const top = 20;
+            
+            // Create the floating window
+            floatingWindow = window.open('', 'FocusTimer', 
+                `width=${width},height=${height},left=${left},top=${top},resizable=no,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`);
+            
+            if (!floatingWindow) {
+                alert('Popup blocked! Please allow popups for this site to use the floating timer.');
+                return;
             }
             
-            function closeDragElement() {
-                // Stop moving when mouse button is released
-                document.onmouseup = null;
-                document.onmousemove = null;
-            }
+            // Write the HTML content for the floating window
+            floatingWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Focus Timer</title>
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                            font-family: 'Segoe UI', system-ui, sans-serif;
+                        }
+                        body {
+                            background: #2d3748;
+                            color: white;
+                            height: 100vh;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            overflow: hidden;
+                            -webkit-app-region: drag;
+                        }
+                        .floating-container {
+                            text-align: center;
+                            padding: 20px;
+                            width: 100%;
+                        }
+                        .timer-display {
+                            font-size: 2.5rem;
+                            font-weight: 700;
+                            margin: 10px 0;
+                            font-variant-numeric: tabular-nums;
+                        }
+                        .timer-status {
+                            font-size: 1rem;
+                            margin-bottom: 15px;
+                            opacity: 0.8;
+                        }
+                        .progress-container {
+                            height: 4px;
+                            background: rgba(255, 255, 255, 0.2);
+                            border-radius: 2px;
+                            margin: 10px 0;
+                            overflow: hidden;
+                            width: 100%;
+                        }
+                        .progress-bar {
+                            height: 100%;
+                            background: #667eea;
+                            width: 0%;
+                            transition: width 1s linear;
+                            border-radius: 2px;
+                        }
+                        .timer-controls {
+                            display: flex;
+                            justify-content: center;
+                            gap: 8px;
+                            margin-top: 10px;
+                        }
+                        .btn {
+                            padding: 6px 12px;
+                            border: none;
+                            border-radius: 20px;
+                            font-size: 0.8rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                        }
+                        .btn-primary {
+                            background: #667eea;
+                            color: white;
+                        }
+                        .btn-secondary {
+                            background: rgba(255, 255, 255, 0.2);
+                            color: white;
+                        }
+                        .timer-modes {
+                            display: flex;
+                            justify-content: center;
+                            gap: 5px;
+                            margin-top: 10px;
+                        }
+                        .mode-btn {
+                            padding: 4px 8px;
+                            border-radius: 12px;
+                            background: rgba(255, 255, 255, 0.1);
+                            border: none;
+                            color: white;
+                            font-size: 0.7rem;
+                            cursor: pointer;
+                        }
+                        .mode-btn.active {
+                            background: #667eea;
+                        }
+                        .close-btn {
+                            position: absolute;
+                            top: 5px;
+                            right: 8px;
+                            background: none;
+                            border: none;
+                            color: rgba(255, 255, 255, 0.6);
+                            font-size: 1.2rem;
+                            cursor: pointer;
+                            -webkit-app-region: no-drag;
+                        }
+                        .close-btn:hover {
+                            color: white;
+                        }
+                    </style>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"><\/script>
+                </head>
+                <body>
+                    <button class="close-btn" onclick="window.close()">×</button>
+                    <div class="floating-container">
+                        <div class="timer-display" id="floating-timer-display">${formatTime(timerTime)}</div>
+                        <div class="timer-status" id="floating-timer-status">${timerStatus.textContent}</div>
+                        
+                        <div class="progress-container">
+                            <div class="progress-bar" id="floating-progress-bar"></div>
+                        </div>
+                        
+                        <div class="timer-controls">
+                            <button class="btn btn-primary" onclick="opener.startTimer()">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="btn btn-secondary" onclick="opener.pauseTimer()">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            <button class="btn btn-secondary" onclick="opener.resetTimer()">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="timer-modes">
+                            <button class="mode-btn ${currentMode === 'pomodoro' ? 'active' : ''}" onclick="opener.setTimerMode('pomodoro')">25</button>
+                            <button class="mode-btn ${currentMode === 'shortBreak' ? 'active' : ''}" onclick="opener.setTimerMode('shortBreak')">5</button>
+                            <button class="mode-btn ${currentMode === 'longBreak' ? 'active' : ''}" onclick="opener.setTimerMode('longBreak')">15</button>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            floatingWindow.document.close();
+            
+            // Focus the main window again
+            window.focus();
         }
 
         // Event listeners
         startBtn.addEventListener('click', startTimer);
-        floatingStartBtn.addEventListener('click', startTimer);
-        
         pauseBtn.addEventListener('click', pauseTimer);
-        floatingPauseBtn.addEventListener('click', pauseTimer);
-        
         resetBtn.addEventListener('click', resetTimer);
-        floatingResetBtn.addEventListener('click', resetTimer);
-        
-        popOutBtn.addEventListener('click', popOutTimer);
-        closeFloatingBtn.addEventListener('click', closeFloatingTimer);
+        popOutBtn.addEventListener('click', createFloatingWindow);
 
         modeButtons.forEach(btn => {
             btn.addEventListener('click', () => {

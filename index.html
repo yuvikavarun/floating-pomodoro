@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floating Pomodoro Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: transparent;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #timer-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 180px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            z-index: 10000;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        #timer-container:hover {
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        #timer-container.minimized {
+            width: 120px;
+            height: 40px;
+            padding: 5px;
+            overflow: hidden;
+        }
+
+        #timer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        #timer-container.minimized #timer-header {
+            margin-bottom: 0;
+        }
+
+        #timer-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        #timer-container.minimized #timer-controls {
+            display: none;
+        }
+
+        .control-btn {
+            background: #f0f0f0;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            margin: 0 2px;
+        }
+
+        .control-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        #timer-display {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 10px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #timer-container.minimized #timer-display {
+            font-size: 18px;
+            margin: 0;
+            line-height: 30px;
+        }
+
+        #timer-mode {
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        #timer-container.minimized #timer-mode {
+            display: none;
+        }
+
+        #minimize-btn, #close-btn {
+            background: none;
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+            color: #7f8c8d;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #minimize-btn:hover, #close-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .mode-btn {
+            background: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #ecf0f1;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        #timer-container.minimized .progress-bar {
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            width: 0%;
+            transition: width 1s linear;
+        }
+
+        /* Make it draggable */
+        #timer-header {
+            cursor: move;
+        }
+    </style>
+</head>
+<body>
+    <div id="timer-container">
+        <div id="timer-header">
+            <span>Pomodoro Timer</span>
+            <div>
+                <button id="minimize-btn">−</button>
+                <button id="close-btn">×</button>
+            </div>
+        </div>
+        <div id="timer-controls">
+            <button class="control-btn" id="start-btn">Start</button>
+            <button class="control-btn" id="pause-btn">Pause</button>
+            <button class="control-btn" id="reset-btn">Reset</button>
+        </div>
+        <div id="timer-display">25:00</div>
+        <div id="timer-mode">Focus Time</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 5px; margin-top: 10px;">
+            <button class="mode-btn active" data-mode="pomodoro">25</button>
+            <button class="mode-btn" data-mode="shortBreak">5</button>
+            <button class="mode-btn" data-mode="longBreak">15</button>
+        </div>
+    </div>
+
+    <script>
+        // Timer state
+        let timerInterval;
+        let timerTime = 25 * 60; // 25 minutes in seconds
+        let isRunning = false;
+        let currentMode = 'pomodoro';
+        let isMinimized = false;
+        
+        // DOM elements
+        const timerDisplay = document.getElementById('timer-display');
+        const timerMode = document.getElementById('timer-mode');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const minimizeBtn = document.getElementById('minimize-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const timerContainer = document.getElementById('timer-container');
+        const modeButtons = document.querySelectorAll('.mode-btn');
+
+        // Timer functions
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            timerDisplay.textContent = formatTime(timerTime);
+            
+            // Update progress bar
+            let totalTime;
+            if (currentMode === 'pomodoro') totalTime = 25 * 60;
+            else if (currentMode === 'shortBreak') totalTime = 5 * 60;
+            else totalTime = 15 * 60;
+            
+            const progress = 100 - (timerTime / totalTime) * 100;
+            progressFill.style.width = `${progress}%`;
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            timerInterval = setInterval(() => {
+                if (timerTime > 0) {
+                    timerTime--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(timerInterval);
+                    isRunning = false;
+                    
+                    // Play completion sound
+                    playCompletionSound();
+                    
+                    // Show notification
+                    if (currentMode === 'pomodoro') {
+                        // Auto-start short break after pomodoro
+                        if (confirm('Focus session completed! Start a break?')) {
+                            setTimerMode('shortBreak');
+                            startTimer();
+                        }
+                    } else {
+                        // Auto-start pomodoro after break
+                        if (confirm('Break completed! Start a focus session?')) {
+                            setTimerMode('pomodoro');
+                            startTimer();
+                        }
+                    }
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            
+            if (currentMode === 'pomodoro') timerTime = 25 * 60;
+            else if (currentMode === 'shortBreak') timerTime = 5 * 60;
+            else timerTime = 15 * 60;
+            
+            updateTimerDisplay();
+        }
+
+        function setTimerMode(mode) {
+            currentMode = mode;
+            
+            // Update active button
+            modeButtons.forEach(btn => {
+                if (btn.dataset.mode === mode) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Update mode text
+            if (mode === 'pomodoro') {
+                timerMode.textContent = 'Focus Time';
+                progressFill.style.background = '#3498db';
+            } else if (mode === 'shortBreak') {
+                timerMode.textContent = 'Short Break';
+                progressFill.style.background = '#2ecc71';
+            } else {
+                timerMode.textContent = 'Long Break';
+                progressFill.style.background = '#9b59b6';
+            }
+            
+            resetTimer();
+        }
+
+        function playCompletionSound() {
+            // Create a simple beep sound
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 1);
+        }
+
+        function toggleMinimize() {
+            isMinimized = !isMinimized;
+            timerContainer.classList.toggle('minimized', isMinimized);
+            
+            if (isMinimized) {
+                minimizeBtn.textContent = '+';
+            } else {
+                minimizeBtn.textContent = '−';
+            }
+        }
+
+        // Make the timer draggable
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+
+        timerContainer.addEventListener('mousedown', (e) => {
+            if (e.target.id === 'timer-header' || e.target.parentElement.id === 'timer-header') {
+                isDragging = true;
+                dragOffset.x = e.clientX - timerContainer.offsetLeft;
+                dragOffset.y = e.clientY - timerContainer.offsetTop;
+                timerContainer.style.cursor = 'grabbing';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                timerContainer.style.left = (e.clientX - dragOffset.x) + 'px';
+                timerContainer.style.top = (e.clientY - dragOffset.y) + 'px';
+                timerContainer.style.right = 'auto';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            timerContainer.style.cursor = 'grab';
+        });
+
+        // Event listeners
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        minimizeBtn.addEventListener('click', toggleMinimize);
+        
+        closeBtn.addEventListener('click', () => {
+            if (confirm('Close the timer?')) {
+                window.close();
+            }
+        });
+
+        modeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setTimerMode(btn.dataset.mode);
+            });
+        });
+
+        // Initialize
+        updateTimerDisplay();
+        
+        // Make sure the timer stays on top
+        timerContainer.style.zIndex = 10000;
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus Timer</title>
+    <title>Floating Pomodoro</title>
     <style>
         * {
             margin: 0;
@@ -15,71 +15,75 @@
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            overflow: hidden;
         }
 
         .container {
             text-align: center;
-            max-width: 500px;
-            width: 90%;
-            padding: 2rem;
+            width: 100%;
+            max-width: 800px;
+            padding: 3rem;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: auto;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         .subtitle {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
             opacity: 0.9;
+            font-weight: 300;
         }
 
         .timer-display {
-            font-size: 5rem;
-            font-weight: 700;
+            font-size: 8rem;
+            font-weight: 800;
             margin: 2rem 0;
             font-variant-numeric: tabular-nums;
-            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            letter-spacing: 2px;
         }
 
         .timer-status {
-            font-size: 1.5rem;
+            font-size: 2rem;
             margin-bottom: 2rem;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .timer-controls {
             display: flex;
             justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 18px 35px;
             border: none;
             border-radius: 50px;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            gap: 10px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
         }
 
         .btn-primary {
@@ -94,28 +98,29 @@
         }
 
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
 
         .btn:active {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
         .timer-modes {
             display: flex;
             justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
 
         .mode-btn {
-            padding: 10px 20px;
+            padding: 15px 30px;
             border-radius: 50px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -123,13 +128,14 @@
         .mode-btn.active {
             background: white;
             color: #667eea;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
         }
 
         .progress-container {
-            height: 8px;
+            height: 12px;
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            margin: 2rem 0;
+            border-radius: 6px;
+            margin: 3rem 0;
             overflow: hidden;
         }
 
@@ -138,12 +144,12 @@
             background: white;
             width: 0%;
             transition: width 1s linear;
-            border-radius: 4px;
+            border-radius: 6px;
         }
 
         .pop-out-section {
-            margin-top: 2rem;
-            padding-top: 2rem;
+            margin-top: 3rem;
+            padding-top: 3rem;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -151,21 +157,36 @@
             background: rgba(255, 255, 255, 0.15);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 12px 24px;
+            padding: 18px 35px;
             border-radius: 50px;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             margin: 0 auto;
         }
 
         .pop-out-btn:hover {
             background: rgba(255, 255, 255, 0.25);
-            transform: translateY(-3px);
+            transform: translateY(-5px);
+        }
+
+        .pop-out-info {
+            margin-top: 15px;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 2rem;
+            text-align: center;
+            font-size: 1.1rem;
+            opacity: 0.8;
+            width: 100%;
         }
 
         /* Animation for timer completion */
@@ -179,10 +200,65 @@
             animation: pulse 1s infinite;
         }
 
+        /* Session completion message */
+        .completion-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .completion-message h2 {
+            font-size: 3.5rem;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .completion-message p {
+            font-size: 1.8rem;
+            margin-bottom: 3rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .continue-btn {
+            padding: 15px 40px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
         /* Responsive design */
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+            
+            h1 {
+                font-size: 3rem;
+            }
+            
             .timer-display {
-                font-size: 4rem;
+                font-size: 5rem;
             }
             
             .timer-controls {
@@ -203,8 +279,8 @@
 </head>
 <body>
     <div class="container" id="main-timer">
-        <h1>Focus Timer</h1>
-        <p class="subtitle">Stay focused and productive</p>
+        <h1>Floating Pomodoro</h1>
+        <p class="subtitle">Pomodoro timer & productivity buddy</p>
         
         <div class="timer-display" id="timer-display">25:00</div>
         <div class="timer-status" id="timer-status">Focus Time</div>
@@ -235,11 +311,15 @@
             <button class="pop-out-btn" id="pop-out-btn">
                 <i class="fas fa-external-link-alt"></i> Pop Out Timer
             </button>
-            <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">
-                Opens in a small floating window that stays on top
+            <p class="pop-out-info">
+                Opens in a small floating window that stays on top of all applications
             </p>
         </div>
     </div>
+
+    <footer>
+        Made by Yuvika Varun
+    </footer>
 
     <script>
         // Timer state
@@ -248,6 +328,7 @@
         let isRunning = false;
         let currentMode = 'pomodoro';
         let floatingWindow = null;
+        let pomodoroCount = 0;
 
         // DOM elements
         const timerDisplay = document.getElementById('timer-display');
@@ -310,25 +391,64 @@
                     // Add completion animation
                     timerDisplay.classList.add('timer-complete');
                     
-                    // Show notification
-                    if (currentMode === 'pomodoro') {
-                        if (confirm('Focus session completed! Start a short break?')) {
-                            setTimerMode('shortBreak');
-                            startTimer();
-                        }
-                    } else {
-                        if (confirm('Break completed! Start a focus session?')) {
-                            setTimerMode('pomodoro');
-                            startTimer();
-                        }
-                    }
-                    
-                    // Remove animation after a delay
-                    setTimeout(() => {
-                        timerDisplay.classList.remove('timer-complete');
-                    }, 3000);
+                    // Auto-advance to next mode based on Pomodoro sequence
+                    autoAdvanceMode();
                 }
             }, 1000);
+        }
+
+        function autoAdvanceMode() {
+            if (currentMode === 'pomodoro') {
+                pomodoroCount++;
+                
+                if (pomodoroCount < 4) {
+                    // After pomodoro, go to short break
+                    setTimerMode('shortBreak');
+                    setTimeout(() => {
+                        startTimer();
+                        showNotification('Focus session completed! Starting short break.');
+                    }, 1000);
+                } else {
+                    // After 4 pomodoros, go to long break
+                    setTimerMode('longBreak');
+                    setTimeout(() => {
+                        startTimer();
+                        showNotification('Focus session completed! Starting long break.');
+                    }, 1000);
+                }
+            } else if (currentMode === 'shortBreak') {
+                // After short break, go to pomodoro
+                setTimerMode('pomodoro');
+                setTimeout(() => {
+                    startTimer();
+                    showNotification('Short break completed! Starting focus session.');
+                }, 1000);
+            } else if (currentMode === 'longBreak') {
+                // After long break, show completion message
+                showSessionCompletion();
+                pomodoroCount = 0; // Reset counter
+            }
+        }
+
+        function showSessionCompletion() {
+            const completionHTML = `
+                <div class="completion-message">
+                    <h2>🎉 Great Job! 🎉</h2>
+                    <p>One Pomodoro session is complete!</p>
+                    <p>Keep going, you're doing amazing!</p>
+                    <button class="continue-btn" onclick="closeCompletionMessage()">Continue</button>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', completionHTML);
+        }
+
+        function closeCompletionMessage() {
+            const completionMessage = document.querySelector('.completion-message');
+            if (completionMessage) {
+                completionMessage.remove();
+            }
+            setTimerMode('pomodoro');
         }
 
         function pauseTimer() {
@@ -341,6 +461,7 @@
             isRunning = false;
             timerTime = getTotalTime();
             updateTimerDisplay();
+            timerDisplay.classList.remove('timer-complete');
         }
 
         function setTimerMode(mode) {
@@ -403,6 +524,12 @@
             }
         }
 
+        function showNotification(message) {
+            // Simple notification using alert for now
+            // In a real app, you'd use a more elegant notification system
+            console.log(message);
+        }
+
         function createFloatingWindow() {
             // Close existing floating window if any
             if (floatingWindow && !floatingWindow.closed) {
@@ -410,14 +537,14 @@
             }
             
             // Calculate position for the floating window (top-right corner)
-            const width = 300;
-            const height = 200;
+            const width = 320;
+            const height = 220;
             const left = screen.width - width - 20;
             const top = 20;
             
-            // Create the floating window
-            floatingWindow = window.open('', 'FocusTimer', 
-                `width=${width},height=${height},left=${left},top=${top},resizable=no,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`);
+            // Create the floating window with alwaysOnTop feature
+            floatingWindow = window.open('', 'FloatingPomodoro', 
+                `width=${width},height=${height},left=${left},top=${top},alwaysOnTop=yes,resizable=no,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`);
             
             if (!floatingWindow) {
                 alert('Popup blocked! Please allow popups for this site to use the floating timer.');
@@ -429,7 +556,7 @@
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Focus Timer</title>
+                    <title>Floating Pomodoro</title>
                     <style>
                         * {
                             margin: 0;
@@ -446,29 +573,32 @@
                             justify-content: center;
                             align-items: center;
                             overflow: hidden;
-                            -webkit-app-region: drag;
                         }
                         .floating-container {
                             text-align: center;
                             padding: 20px;
                             width: 100%;
+                            height: 100%;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
                         }
                         .timer-display {
-                            font-size: 2.5rem;
+                            font-size: 2.8rem;
                             font-weight: 700;
                             margin: 10px 0;
                             font-variant-numeric: tabular-nums;
                         }
                         .timer-status {
-                            font-size: 1rem;
+                            font-size: 1.1rem;
                             margin-bottom: 15px;
-                            opacity: 0.8;
+                            opacity: 0.9;
                         }
                         .progress-container {
-                            height: 4px;
+                            height: 6px;
                             background: rgba(255, 255, 255, 0.2);
-                            border-radius: 2px;
-                            margin: 10px 0;
+                            border-radius: 3px;
+                            margin: 15px 0;
                             overflow: hidden;
                             width: 100%;
                         }
@@ -477,19 +607,19 @@
                             background: #667eea;
                             width: 0%;
                             transition: width 1s linear;
-                            border-radius: 2px;
+                            border-radius: 3px;
                         }
                         .timer-controls {
                             display: flex;
                             justify-content: center;
-                            gap: 8px;
-                            margin-top: 10px;
+                            gap: 10px;
+                            margin-top: 15px;
                         }
                         .btn {
-                            padding: 6px 12px;
+                            padding: 8px 16px;
                             border: none;
                             border-radius: 20px;
-                            font-size: 0.8rem;
+                            font-size: 0.9rem;
                             font-weight: 600;
                             cursor: pointer;
                             transition: all 0.2s ease;
@@ -505,16 +635,16 @@
                         .timer-modes {
                             display: flex;
                             justify-content: center;
-                            gap: 5px;
-                            margin-top: 10px;
+                            gap: 8px;
+                            margin-top: 15px;
                         }
                         .mode-btn {
-                            padding: 4px 8px;
-                            border-radius: 12px;
+                            padding: 6px 12px;
+                            border-radius: 15px;
                             background: rgba(255, 255, 255, 0.1);
                             border: none;
                             color: white;
-                            font-size: 0.7rem;
+                            font-size: 0.8rem;
                             cursor: pointer;
                         }
                         .mode-btn.active {
@@ -522,16 +652,22 @@
                         }
                         .close-btn {
                             position: absolute;
-                            top: 5px;
-                            right: 8px;
+                            top: 8px;
+                            right: 12px;
                             background: none;
                             border: none;
                             color: rgba(255, 255, 255, 0.6);
-                            font-size: 1.2rem;
+                            font-size: 1.4rem;
                             cursor: pointer;
-                            -webkit-app-region: no-drag;
+                            width: 30px;
+                            height: 30px;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
                         }
                         .close-btn:hover {
+                            background: rgba(255, 255, 255, 0.1);
                             color: white;
                         }
                     </style>
@@ -565,6 +701,16 @@
                             <button class="mode-btn ${currentMode === 'longBreak' ? 'active' : ''}" onclick="opener.setTimerMode('longBreak')">15</button>
                         </div>
                     </div>
+                    
+                    <script>
+                        // Try to keep window always on top
+                        window.focus();
+                        setInterval(() => {
+                            if(!document.hasFocus()) {
+                                window.focus();
+                            }
+                        }, 1000);
+                    <\/script>
                 </body>
                 </html>
             `);
@@ -589,6 +735,13 @@
 
         // Initialize
         updateTimerDisplay();
+
+        // Make global functions available for the floating window
+        window.startTimer = startTimer;
+        window.pauseTimer = pauseTimer;
+        window.resetTimer = resetTimer;
+        window.setTimerMode = setTimerMode;
+        window.closeCompletionMessage = closeCompletionMessage;
     </script>
 
     <!-- Font Awesome for icons -->

@@ -3,199 +3,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Floating Pomodoro Timer</title>
+    <title>Pomodoro Timer</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
 
         body {
-            background: transparent;
-            overflow: hidden;
-            user-select: none;
-            -webkit-user-select: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
         }
 
-        #timer-container {
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .timer-display {
+            font-size: 5rem;
+            font-weight: 700;
+            margin: 2rem 0;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .timer-status {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .timer-modes {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .mode-btn {
+            padding: 10px 20px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .progress-container {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            width: 0%;
+            transition: width 1s linear;
+            border-radius: 4px;
+        }
+
+        .pop-out-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pop-out-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+
+        .pop-out-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px);
+        }
+
+        /* Floating window styles */
+        .floating-timer {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 180px;
+            width: 300px;
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 15px;
+            color: #333;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
             z-index: 10000;
-            transition: all 0.3s ease;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        #timer-container:hover {
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+        .floating-timer .timer-display {
+            font-size: 2.5rem;
+            color: #333;
+            margin: 1rem 0;
         }
 
-        #timer-container.minimized {
-            width: 120px;
-            height: 40px;
-            padding: 5px;
-            overflow: hidden;
+        .floating-timer .timer-status {
+            color: #666;
+            font-size: 1rem;
         }
 
-        #timer-header {
+        .floating-timer .btn {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .floating-timer .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .floating-timer .btn-secondary {
+            background: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+
+        .floating-timer .mode-btn {
+            background: rgba(0, 0, 0, 0.05);
+            color: #333;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .floating-timer .mode-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .floating-timer .progress-container {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .floating-timer .progress-bar {
+            background: #667eea;
+        }
+
+        .floating-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            font-size: 14px;
+            margin-bottom: 1rem;
+        }
+
+        .floating-title {
+            font-size: 1.2rem;
             font-weight: 600;
             color: #333;
         }
 
-        #timer-container.minimized #timer-header {
-            margin-bottom: 0;
-        }
-
-        #timer-controls {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        #timer-container.minimized #timer-controls {
-            display: none;
-        }
-
-        .control-btn {
-            background: #f0f0f0;
-            border: none;
-            border-radius: 6px;
-            padding: 6px 10px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex: 1;
-            margin: 0 2px;
-        }
-
-        .control-btn:hover {
-            background: #e0e0e0;
-        }
-
-        .control-btn:active {
-            transform: scale(0.95);
-        }
-
-        #timer-display {
-            text-align: center;
-            font-size: 28px;
-            font-weight: 700;
-            color: #2c3e50;
-            margin: 10px 0;
-            font-variant-numeric: tabular-nums;
-        }
-
-        #timer-container.minimized #timer-display {
-            font-size: 18px;
-            margin: 0;
-            line-height: 30px;
-        }
-
-        #timer-mode {
-            text-align: center;
-            font-size: 12px;
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-
-        #timer-container.minimized #timer-mode {
-            display: none;
-        }
-
-        #minimize-btn, #close-btn {
+        .close-btn {
             background: none;
             border: none;
-            font-size: 12px;
+            font-size: 1.5rem;
             cursor: pointer;
-            color: #7f8c8d;
-            width: 20px;
-            height: 20px;
+            color: #666;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        #minimize-btn:hover, #close-btn:hover {
-            background: #f0f0f0;
+        .close-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
         }
 
-        .mode-btn {
-            background: #e0e0e0;
-            border: none;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .mode-btn.active {
-            background: #3498db;
-            color: white;
-        }
-
-        .progress-bar {
-            height: 4px;
-            background: #ecf0f1;
-            border-radius: 2px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-
-        #timer-container.minimized .progress-bar {
+        .hidden {
             display: none;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: #3498db;
-            width: 0%;
-            transition: width 1s linear;
+        /* Animation for timer completion */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
-        /* Make it draggable */
-        #timer-header {
-            cursor: move;
+        .timer-complete {
+            animation: pulse 1s infinite;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .timer-display {
+                font-size: 4rem;
+            }
+            
+            .timer-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 80%;
+                justify-content: center;
+            }
+            
+            .timer-modes {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="timer-container">
-        <div id="timer-header">
-            <span>Pomodoro Timer</span>
-            <div>
-                <button id="minimize-btn">−</button>
-                <button id="close-btn">×</button>
-            </div>
+    <div class="container" id="main-timer">
+        <h1>Pomodoro Timer</h1>
+        <p class="subtitle">Focus on your tasks, one session at a time</p>
+        
+        <div class="timer-display" id="timer-display">25:00</div>
+        <div class="timer-status" id="timer-status">Focus Time</div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
         </div>
-        <div id="timer-controls">
-            <button class="control-btn" id="start-btn">Start</button>
-            <button class="control-btn" id="pause-btn">Pause</button>
-            <button class="control-btn" id="reset-btn">Reset</button>
+        
+        <div class="timer-controls">
+            <button class="btn btn-primary" id="start-btn">
+                <i class="fas fa-play"></i> Start
+            </button>
+            <button class="btn btn-secondary" id="pause-btn">
+                <i class="fas fa-pause"></i> Pause
+            </button>
+            <button class="btn btn-secondary" id="reset-btn">
+                <i class="fas fa-redo"></i> Reset
+            </button>
         </div>
-        <div id="timer-display">25:00</div>
-        <div id="timer-mode">Focus Time</div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progress-fill"></div>
+        
+        <div class="timer-modes">
+            <button class="mode-btn active" data-mode="pomodoro">Pomodoro</button>
+            <button class="mode-btn" data-mode="shortBreak">Short Break</button>
+            <button class="mode-btn" data-mode="longBreak">Long Break</button>
         </div>
-        <div style="display: flex; justify-content: center; gap: 5px; margin-top: 10px;">
-            <button class="mode-btn active" data-mode="pomodoro">25</button>
-            <button class="mode-btn" data-mode="shortBreak">5</button>
-            <button class="mode-btn" data-mode="longBreak">15</button>
+        
+        <div class="pop-out-section">
+            <button class="pop-out-btn" id="pop-out-btn">
+                <i class="fas fa-external-link-alt"></i> Pop Out Timer
+            </button>
+        </div>
+    </div>
+
+    <div class="floating-timer hidden" id="floating-timer">
+        <div class="floating-header">
+            <div class="floating-title">Pomodoro Timer</div>
+            <button class="close-btn" id="close-floating">×</button>
+        </div>
+        
+        <div class="timer-display" id="floating-timer-display">25:00</div>
+        <div class="timer-status" id="floating-timer-status">Focus Time</div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="floating-progress-bar"></div>
+        </div>
+        
+        <div class="timer-controls">
+            <button class="btn btn-primary" id="floating-start-btn">
+                <i class="fas fa-play"></i> Start
+            </button>
+            <button class="btn btn-secondary" id="floating-pause-btn">
+                <i class="fas fa-pause"></i> Pause
+            </button>
+            <button class="btn btn-secondary" id="floating-reset-btn">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+        </div>
+        
+        <div class="timer-modes">
+            <button class="mode-btn active" data-mode="pomodoro">Pomodoro</button>
+            <button class="mode-btn" data-mode="shortBreak">Short Break</button>
+            <button class="mode-btn" data-mode="longBreak">Long Break</button>
         </div>
     </div>
 
@@ -205,18 +372,25 @@
         let timerTime = 25 * 60; // 25 minutes in seconds
         let isRunning = false;
         let currentMode = 'pomodoro';
-        let isMinimized = false;
-        
+        let isFloating = false;
+
         // DOM elements
+        const mainTimer = document.getElementById('main-timer');
+        const floatingTimer = document.getElementById('floating-timer');
         const timerDisplay = document.getElementById('timer-display');
-        const timerMode = document.getElementById('timer-mode');
+        const floatingTimerDisplay = document.getElementById('floating-timer-display');
+        const timerStatus = document.getElementById('timer-status');
+        const floatingTimerStatus = document.getElementById('floating-timer-status');
         const startBtn = document.getElementById('start-btn');
+        const floatingStartBtn = document.getElementById('floating-start-btn');
         const pauseBtn = document.getElementById('pause-btn');
+        const floatingPauseBtn = document.getElementById('floating-pause-btn');
         const resetBtn = document.getElementById('reset-btn');
-        const minimizeBtn = document.getElementById('minimize-btn');
-        const closeBtn = document.getElementById('close-btn');
-        const progressFill = document.getElementById('progress-fill');
-        const timerContainer = document.getElementById('timer-container');
+        const floatingResetBtn = document.getElementById('floating-reset-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const floatingProgressBar = document.getElementById('floating-progress-bar');
+        const popOutBtn = document.getElementById('pop-out-btn');
+        const closeFloatingBtn = document.getElementById('close-floating');
         const modeButtons = document.querySelectorAll('.mode-btn');
 
         // Timer functions
@@ -227,7 +401,9 @@
         }
 
         function updateTimerDisplay() {
-            timerDisplay.textContent = formatTime(timerTime);
+            const displayTime = formatTime(timerTime);
+            timerDisplay.textContent = displayTime;
+            floatingTimerDisplay.textContent = displayTime;
             
             // Update progress bar
             let totalTime;
@@ -236,7 +412,8 @@
             else totalTime = 15 * 60;
             
             const progress = 100 - (timerTime / totalTime) * 100;
-            progressFill.style.width = `${progress}%`;
+            progressBar.style.width = `${progress}%`;
+            floatingProgressBar.style.width = `${progress}%`;
         }
 
         function startTimer() {
@@ -254,20 +431,28 @@
                     // Play completion sound
                     playCompletionSound();
                     
+                    // Add completion animation
+                    timerDisplay.classList.add('timer-complete');
+                    floatingTimerDisplay.classList.add('timer-complete');
+                    
                     // Show notification
                     if (currentMode === 'pomodoro') {
-                        // Auto-start short break after pomodoro
-                        if (confirm('Focus session completed! Start a break?')) {
+                        if (confirm('Focus session completed! Start a short break?')) {
                             setTimerMode('shortBreak');
                             startTimer();
                         }
                     } else {
-                        // Auto-start pomodoro after break
                         if (confirm('Break completed! Start a focus session?')) {
                             setTimerMode('pomodoro');
                             startTimer();
                         }
                     }
+                    
+                    // Remove animation after a delay
+                    setTimeout(() => {
+                        timerDisplay.classList.remove('timer-complete');
+                        floatingTimerDisplay.classList.remove('timer-complete');
+                    }, 3000);
                 }
             }, 1000);
         }
@@ -300,88 +485,108 @@
                 }
             });
             
-            // Update mode text
+            // Update status text
+            let statusText = '';
             if (mode === 'pomodoro') {
-                timerMode.textContent = 'Focus Time';
-                progressFill.style.background = '#3498db';
+                statusText = 'Focus Time';
             } else if (mode === 'shortBreak') {
-                timerMode.textContent = 'Short Break';
-                progressFill.style.background = '#2ecc71';
+                statusText = 'Short Break';
             } else {
-                timerMode.textContent = 'Long Break';
-                progressFill.style.background = '#9b59b6';
+                statusText = 'Long Break';
             }
+            
+            timerStatus.textContent = statusText;
+            floatingTimerStatus.textContent = statusText;
             
             resetTimer();
         }
 
         function playCompletionSound() {
-            // Create a simple beep sound
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 1);
-        }
-
-        function toggleMinimize() {
-            isMinimized = !isMinimized;
-            timerContainer.classList.toggle('minimized', isMinimized);
-            
-            if (isMinimized) {
-                minimizeBtn.textContent = '+';
-            } else {
-                minimizeBtn.textContent = '−';
+            // Create a simple beep sound using the Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 1);
+            } catch (e) {
+                console.log("Audio context not supported");
             }
         }
 
-        // Make the timer draggable
-        let isDragging = false;
-        let dragOffset = { x: 0, y: 0 };
+        function popOutTimer() {
+            mainTimer.classList.add('hidden');
+            floatingTimer.classList.remove('hidden');
+            isFloating = true;
+            
+            // Make the floating timer draggable
+            makeDraggable(floatingTimer);
+        }
 
-        timerContainer.addEventListener('mousedown', (e) => {
-            if (e.target.id === 'timer-header' || e.target.parentElement.id === 'timer-header') {
-                isDragging = true;
-                dragOffset.x = e.clientX - timerContainer.offsetLeft;
-                dragOffset.y = e.clientY - timerContainer.offsetTop;
-                timerContainer.style.cursor = 'grabbing';
+        function closeFloatingTimer() {
+            floatingTimer.classList.add('hidden');
+            mainTimer.classList.remove('hidden');
+            isFloating = false;
+        }
+
+        function makeDraggable(element) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            element.onmousedown = dragMouseDown;
+            
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // Get the mouse cursor position at startup
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // Call a function whenever the cursor moves
+                document.onmousemove = elementDrag;
             }
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                timerContainer.style.left = (e.clientX - dragOffset.x) + 'px';
-                timerContainer.style.top = (e.clientY - dragOffset.y) + 'px';
-                timerContainer.style.right = 'auto';
+            
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // Calculate the new cursor position
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // Set the element's new position
+                element.style.top = (element.offsetTop - pos2) + "px";
+                element.style.left = (element.offsetLeft - pos1) + "px";
             }
-        });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-            timerContainer.style.cursor = 'grab';
-        });
+            
+            function closeDragElement() {
+                // Stop moving when mouse button is released
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
 
         // Event listeners
         startBtn.addEventListener('click', startTimer);
-        pauseBtn.addEventListener('click', pauseTimer);
-        resetBtn.addEventListener('click', resetTimer);
-        minimizeBtn.addEventListener('click', toggleMinimize);
+        floatingStartBtn.addEventListener('click', startTimer);
         
-        closeBtn.addEventListener('click', () => {
-            if (confirm('Close the timer?')) {
-                window.close();
-            }
-        });
+        pauseBtn.addEventListener('click', pauseTimer);
+        floatingPauseBtn.addEventListener('click', pauseTimer);
+        
+        resetBtn.addEventListener('click', resetTimer);
+        floatingResetBtn.addEventListener('click', resetTimer);
+        
+        popOutBtn.addEventListener('click', popOutTimer);
+        closeFloatingBtn.addEventListener('click', closeFloatingTimer);
 
         modeButtons.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -391,9 +596,9 @@
 
         // Initialize
         updateTimerDisplay();
-        
-        // Make sure the timer stays on top
-        timerContainer.style.zIndex = 10000;
     </script>
+
+    <!-- Font Awesome for icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
 </body>
 </html>
